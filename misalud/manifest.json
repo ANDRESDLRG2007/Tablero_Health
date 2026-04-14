@@ -1,0 +1,16 @@
+{
+  "name": "MiSalud",
+  "short_name": "MiSalud",
+  "description": "Gestión de citas, órdenes y medicamentos",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#185fa5",
+  "icons": [
+    {
+      "src": "https://api.iconify.design/twemoji/hospital.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}

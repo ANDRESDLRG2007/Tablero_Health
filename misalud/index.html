@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MiSalud</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <div class="header-icon">🏥</div>
+      <div>
+        <h1>MiSalud</h1>
+        <p id="fecha-hoy"></p>
+      </div>
+      <button id="btn-notif" class="btn-notif" title="Activar notificaciones">🔔</button>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="tablero">Tablero</button>
+      <button class="tab" data-tab="ordenes">Órdenes</button>
+      <button class="tab" data-tab="medicamentos">Medicamentos</button>
+      <button class="tab" data-tab="examenes">Exámenes</button>
+      <button class="tab" data-tab="fotos">Fotos</button>
+    </nav>
+
+    <!-- TABLERO -->
+    <section id="tab-tablero" class="tab-content active">
+      <div class="metrics" id="metrics"></div>
+      <h2 class="section-title">Estado de tus órdenes y exámenes</h2>
+      <div id="lista-tablero"></div>
+    </section>
+
+    <!-- ÓRDENES -->
+    <section id="tab-ordenes" class="tab-content">
+      <button class="fab" id="btn-nueva-orden">+ Nueva orden / cita</button>
+      <div id="lista-ordenes"></div>
+    </section>
+
+    <!-- MEDICAMENTOS -->
+    <section id="tab-medicamentos" class="tab-content">
+      <button class="fab" id="btn-nuevo-med">+ Nuevo medicamento</button>
+      <div id="lista-medicamentos"></div>
+    </section>
+
+    <!-- EXÁMENES -->
+    <section id="tab-examenes" class="tab-content">
+      <button class="fab" id="btn-nuevo-examen">+ Nuevo examen</button>
+      <div id="lista-examenes"></div>
+    </section>
+
+    <!-- FOTOS -->
+    <section id="tab-fotos" class="tab-content">
+      <div class="upload-area">
+        <p>📷 Toma foto o sube una imagen de tu orden/examen</p>
+        <input type="file" id="input-foto" accept="image/*" capture="environment" multiple />
+        <label for="input-foto" class="fab">Tomar / subir foto</label>
+      </div>
+      <div id="galeria-fotos" class="galeria"></div>
+    </section>
+  </div>
+
+  <!-- MODAL GENÉRICO -->
+  <div id="modal-overlay" class="modal-overlay hidden">
+    <div class="modal">
+      <h3 id="modal-titulo"></h3>
+      <div id="modal-contenido"></div>
+      <div class="modal-actions">
+        <button id="modal-cancelar" class="btn-secundario">Cancelar</button>
+        <button id="modal-guardar" class="btn-primario">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL VER FOTO -->
+  <div id="modal-foto" class="modal-overlay hidden">
+    <div class="modal modal-foto">
+      <img id="foto-grande" src="" alt="Orden médica" />
+      <div class="modal-actions">
+        <button id="btn-cerrar-foto" class="btn-secundario">Cerrar</button>
+        <button id="btn-eliminar-foto" class="btn-peligro">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
