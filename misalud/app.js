@@ -107,13 +107,11 @@ document.getElementById('fecha-hoy').textContent = new Date().toLocaleDateString
 // Notificaciones y PWA
 // ============================================================
 
-// Registrar el Service Worker de forma limpia al cargar la web
+// Registrar el Service Worker INMEDIATAMENTE al cargar el script
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/firebase-messaging-sw.js')
-      .then(reg => console.log('✅ Service Worker registrado en scope:', reg.scope))
-      .catch(err => console.error('❌ Error al registrar el SW:', err));
-  });
+  navigator.serviceWorker.register('/firebase-messaging-sw.js')
+    .then(reg => console.log('✅ Service Worker registrado en scope:', reg.scope))
+    .catch(err => console.error('❌ Error al registrar el SW:', err));
 }
 
 async function activarNotificacionesFCM() {
@@ -129,7 +127,23 @@ async function activarNotificacionesFCM() {
       return;
     }
 
-    const registration = await navigator.serviceWorker.ready;
+    // Reintentar hasta que el SW esté activo
+    let registration;
+    let intentos = 0;
+    while (!registration && intentos < 10) {
+      try {
+        registration = await navigator.serviceWorker.ready;
+        break;
+      } catch {
+        intentos++;
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    }
+
+    if (!registration) {
+      alert('El Service Worker no se pudo activar. Recarga la página.');
+      return;
+    }
 
     const tokenActual = await getToken(messaging, { 
       vapidKey: 'BH3SH7B7zzTwpulQPKELpS7dY9a-k39uv1qbe5CQXILaxlt4HiSWv33ccDjGB9fp5yEN8dPJEHldin8-FxJQrSk',
