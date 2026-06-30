@@ -3,7 +3,22 @@
 // Gestión de citas, órdenes, exámenes y medicamentos
 // ============================================================
 
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js';
+
 const DB_KEY = 'misalud_data';
+
+const firebaseConfig = {
+  apiKey: 'AIzaSyA8v94-ConfyEv7AIC4UsiWGGUI3wVi13Y',
+  projectId: 'misalud-b1ee0',
+  messagingSenderId: '978775827758',
+  appId: '1:978775827758:web:587cd9e4a9202293fb86bf'
+};
+
+const VAPID_KEY = 'BH3SH7B7zzTwpulQPKELpS7dY9a-k39uv1qbe5CQXILaxlt4HiSWv33ccDjGB9fp5yEN8dPJEHldin8-FxJQrSk';
+
+const app = initializeApp(firebaseConfig);
+const messaging = getMessaging(app);
 
 // Estado inicial
 function estadoDefault() {
@@ -88,24 +103,64 @@ document.getElementById('fecha-hoy').textContent = new Date().toLocaleDateString
 });
 
 // ============================================================
-// Notificaciones
+// Notificaciones y PWA
 // ============================================================
 
-document.getElementById('btn-notif').addEventListener('click', async () => {
-  if (!('Notification' in window)) {
-    alert('Tu navegador no soporta notificaciones.');
-    return;
+// 1. Registrar el Service Worker (necesario para la PWA y en celulares)
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/firebase-messaging-sw.js')
+    .then(() => console.log('✅ Service Worker registrado'))
+    .catch(err => console.error('Error al registrar SW:', err));
+}
+
+async function activarNotificacionesFCM() {
+  try {
+    if (!('Notification' in window)) {
+      alert('Tu navegador no soporta notificaciones.');
+      return;
+    }
+
+    const permiso = await Notification.requestPermission();
+    if (permiso !== 'granted') {
+      alert('Notificaciones denegadas. Actívalas en la configuración del navegador.');
+      return;
+    }
+
+    const registration = await navigator.serviceWorker.ready;
+    const tokenActual = await getToken(messaging, {
+      vapidKey: VAPID_KEY,
+      serviceWorkerRegistration: registration
+    });
+
+    if (tokenActual) {
+      console.log('🚀 Tu Token de FCM es:', tokenActual);
+      localStorage.setItem('fcm_token', tokenActual);
+      alert(`✅ Token de FCM generado:\n${tokenActual}`);
+      programarNotificaciones();
+    } else {
+      console.log('No se generó ningún token. Revisa los permisos.');
+      alert('No se generó ningún token. Revisa los permisos.');
+    }
+  } catch (error) {
+    console.error('Error al configurar FCM:', error);
+    alert('Error al configurar FCM. Revisa la consola para más detalles.');
   }
-  const perm = await Notification.requestPermission();
-  if (perm === 'granted') {
-    alert('✅ Notificaciones activadas. Recibirás alertas cuando se acerquen vencimientos.');
-    programarNotificaciones();
-  } else {
-    alert('Notificaciones denegadas. Actívalas en la configuración del navegador.');
+}
+
+onMessage(messaging, (payload) => {
+  console.log('Mensaje recibido con la app abierta:', payload);
+  if (payload.notification) {
+    alert(`🔔 ${payload.notification.title}\n${payload.notification.body}`);
   }
 });
 
+// Actualiza el botón para activar FCM y/o notificaciones locales
+document.getElementById('btn-notif').addEventListener('click', activarNotificacionesFCM);
+
 function programarNotificaciones() {
+  // Configuración: ¿Cuántos días antes quieres que te avise?
+  const DIAS_DE_ANTICIPACION = 2; // Cámbialo a 1 si prefieres que sea solo un día antes
+
   const items = [
     ...estado.ordenes.map(o => ({ nombre: `Orden: ${o.especialidad}`, fecha: o.fechaVencimiento })),
     ...estado.examenes.map(e => ({ nombre: `Examen: ${e.nombre}`, fecha: e.fechaVencimiento })),
@@ -116,22 +171,33 @@ function programarNotificaciones() {
     const dias = diasRestantes(item.fecha);
     if (dias === null) return;
 
-    if (dias === 3 && Notification.permission === 'granted') {
-      new Notification('⚠️ MiSalud — Próximo a vencer', {
-        body: `${item.nombre} vence en 3 días`,
-        icon: '/favicon.ico'
-      });
-    }
-    if (dias === 0 && Notification.permission === 'granted') {
-      new Notification('🚨 MiSalud — Vence hoy', {
-        body: `${item.nombre} vence hoy`,
-        icon: '/favicon.ico'
+    if (Notification.permission === 'granted' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then(registration => {
+        
+        // Alerta de próximos a vencer (1 o 2 días antes según tu configuración)
+        if (dias > 0 && dias <= DIAS_DE_ANTICIPACION) {
+          registration.showNotification('⚠️ MiSalud — Próximo a vencer', {
+            body: `${item.nombre} vence en ${dias} día(s).`,
+            icon: '/favicon.svg',
+            vibrate: [200, 100, 200]
+          });
+        }
+        
+        // Alerta de vencimiento hoy
+        if (dias === 0) {
+          registration.showNotification('🚨 MiSalud — Vence HOY', {
+            body: `${item.nombre} vence el día de hoy. ¡No lo olvides!`,
+            icon: '/favicon.svg',
+            vibrate: [500, 200, 500]
+          });
+        }
+
       });
     }
   });
 }
 
-// Verificar notificaciones al cargar
+// Verificar notificaciones al cargar la app
 if (Notification.permission === 'granted') {
   programarNotificaciones();
 }
