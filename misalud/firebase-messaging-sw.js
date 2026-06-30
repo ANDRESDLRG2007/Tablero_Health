@@ -13,7 +13,9 @@ const CACHE_URLS = [
 
 firebase.initializeApp({
   apiKey: "AIzaSyA8v94-ConfyEv7AIC4UsiWGGUI3wVi13Y",
+  authDomain: "misalud-b1ee0.firebaseapp.com",
   projectId: "misalud-b1ee0",
+  storageBucket: "misalud-b1ee0.firebasestorage.app",
   messagingSenderId: "978775827758",
   appId: "1:978775827758:web:587cd9e4a9202293fb86bf"
 });
