@@ -130,8 +130,10 @@ async function activarNotificacionesFCM() {
       return;
     }
 
+    const registration = await navigator.serviceWorker.ready;
     const tokenActual = await getToken(messaging, { 
-      vapidKey: VAPID_KEY 
+      vapidKey: 'BH3SH7B7zzTwpulQPKELpS7dY9a-k39uv1qbe5CQXILaxlt4HiSWv33ccDjGB9fp5yEN8dPJEHldin8-FxJQrSk',
+      serviceWorkerRegistration: registration
     });
 
     if (tokenActual) {
