@@ -109,7 +109,9 @@ document.getElementById('fecha-hoy').textContent = new Date().toLocaleDateString
 // 1. Registrar el Service Worker (necesario para la PWA y en celulares)
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/firebase-messaging-sw.js')
-    .then(() => console.log('✅ Service Worker registrado'))
+    .then(reg => {
+      console.log('✅ Service Worker registrado', reg);
+    })
     .catch(err => console.error('Error al registrar SW:', err));
 }
 
@@ -143,7 +145,7 @@ async function activarNotificacionesFCM() {
     }
   } catch (error) {
     console.error('Error al configurar FCM:', error);
-    alert('Error al configurar FCM. Revisa la consola para más detalles.');
+    alert(`Error al configurar FCM: ${error.message || error}`);
   }
 }
 
