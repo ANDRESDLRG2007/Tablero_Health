@@ -14,10 +14,9 @@ const firebaseConfig = {
   projectId: 'misalud-b1ee0',
   storageBucket: 'misalud-b1ee0.firebasestorage.app',
   messagingSenderId: '978775827758',
-  appId: '1:978775827758:web:587cd9e4a9202293fb86bf'
+  appId: '1:978775827758:web:587cd9e4a9202293fb86bf',
+  measurementId: 'G-BEYL2MWLZN'
 };
-
-const VAPID_KEY = 'BH3SH7B7zzTwpulQPKELpS7dY9a-k39uv1qbe5CQXILaxlt4HiSWv33ccDjGB9fp5yEN8dPJEHldin8-FxJQrSk';
 
 const app = initializeApp(firebaseConfig);
 const messaging = getMessaging(app);
@@ -108,13 +107,13 @@ document.getElementById('fecha-hoy').textContent = new Date().toLocaleDateString
 // Notificaciones y PWA
 // ============================================================
 
-// 1. Registrar el Service Worker (necesario para la PWA y en celulares)
+// Registrar el Service Worker de forma limpia al cargar la web
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/firebase-messaging-sw.js')
-    .then(reg => {
-      console.log('✅ Service Worker registrado', reg);
-    })
-    .catch(err => console.error('Error al registrar SW:', err));
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/firebase-messaging-sw.js')
+      .then(reg => console.log('✅ Service Worker registrado en scope:', reg.scope))
+      .catch(err => console.error('❌ Error al registrar el SW:', err));
+  });
 }
 
 async function activarNotificacionesFCM() {
@@ -126,24 +125,23 @@ async function activarNotificacionesFCM() {
 
     const permiso = await Notification.requestPermission();
     if (permiso !== 'granted') {
-      alert('Notificaciones denegadas. Actívalas en la configuración del navegador.');
+      alert('Las notificaciones fueron denegadas.');
       return;
     }
 
     const registration = await navigator.serviceWorker.ready;
+
     const tokenActual = await getToken(messaging, { 
       vapidKey: 'BH3SH7B7zzTwpulQPKELpS7dY9a-k39uv1qbe5CQXILaxlt4HiSWv33ccDjGB9fp5yEN8dPJEHldin8-FxJQrSk',
       serviceWorkerRegistration: registration
     });
 
     if (tokenActual) {
-      console.log('🚀 Tu Token de FCM es:', tokenActual);
+      console.log('🚀 Tu Token es:', tokenActual);
       localStorage.setItem('fcm_token', tokenActual);
-      alert(`✅ Token de FCM generado:\n${tokenActual}`);
-      programarNotificaciones();
+      alert('✅ ¡Conectado con éxito!\n\nToken:\n' + tokenActual);
     } else {
-      console.log('No se generó ningún token. Revisa los permisos.');
-      alert('No se generó ningún token. Revisa los permisos.');
+      alert('No se pudo obtener el token de inscripción.');
     }
   } catch (error) {
     console.error('Error al configurar FCM:', error);
@@ -152,13 +150,10 @@ async function activarNotificacionesFCM() {
 }
 
 onMessage(messaging, (payload) => {
-  console.log('Mensaje recibido con la app abierta:', payload);
-  if (payload.notification) {
-    alert(`🔔 ${payload.notification.title}\n${payload.notification.body}`);
-  }
+  alert(`🔔 ${payload.notification.title}\n${payload.notification.body}`);
 });
 
-// Actualiza el botón para activar FCM y/o notificaciones locales
+// Vinculación del evento
 document.getElementById('btn-notif').addEventListener('click', activarNotificacionesFCM);
 
 function programarNotificaciones() {
