@@ -3,7 +3,7 @@ importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-comp
 
 // Configuración idéntica y completa
 firebase.initializeApp({
-  apiKey: "AIzaSyA8v94-ConfyEv7AIC4UsiWGGUI3wVi13Y",
+  apiKey: "AIzaSyBs1uwgKhwz57aha3bdj3MzUo3yKV3J_0Q",
   authDomain: "misalud-b1ee0.firebaseapp.com",
   projectId: "misalud-b1ee0",
   storageBucket: "misalud-b1ee0.firebasestorage.app",
